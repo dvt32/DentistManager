@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	
+	<title>График</title>
+	
+	<!-- jQuery -->
+	<script
+	  src="https://code.jquery.com/jquery-3.3.1.js"
+	  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+	  crossorigin="anonymous">
+	</script>
+	
+	<!-- Bootstrap -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+	
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
+</head>
+<body>
+	<nav id="menu" class="navbar navbar-expand-sm bg-secondary">
+  		<ul class="navbar-nav">
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/">Начало</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/schedule">График</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/patients">Пациенти</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/settings">Настройки</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/archive">Архивиране</a>
+		    </li>
+  		</ul>
+	</nav>
+	
+	<div id="schedule">
+		<div class="col-3 mt-2"><p><b>График подреден по дата и час</b></p></div>
+		<form>
+			<div class="form-group">
+				<div class="col-2">
+					<select id="schedule-list" name="schedule-list" size="10" onchange="fillScheduleForm()" class="form-control" th:style="${schedules.size() > 0} ? 'width:auto;'">
+						<option 
+							th:each="schedule : ${schedules}" 
+							th:value="schedule + ${schedule.id}"  
+							th:text="${ '('+schedule.date+')' + ' @ ' + schedule.time + ' - ' + schedule.patient.fullName } "
+						>
+						</option>
+					</select>
+				</div>
+			</div>
+		</form>
+		<div class="col-2"><p>Извършени услуги и цени:</p></div>
+		<form>
+			<div class="form-group">
+				<div class="col-2">
+					<select id="schedule-manipulations-list" size="5" class="form-control" disabled>
+					</select>
+				</div>
+			</div>
+		</form>
+		
+		<form action="submitScheduleInfo" method="post" onsubmit="if (submitScheduleInfoOnSubmit() === false) event.preventDefault();">
+			<div class="col-2">
+				<input type="checkbox" name="paidStatus"> Платено</input> 
+				(Цена: <input type="text" name="priceToPay" value="0.00" size="3" readonly="readonly"> лв.)
+			</div>
+			
+			<div class="col-2 mt-2 mb-2">---</div>
+			
+			<div class="col-2 mt-2 mb-2"><p><b>Информация за графика</b></p></div>
+			
+			<input type="hidden" name="id" value="-1">
+			
+			<div class="form-group">
+				<div class="col-2">
+				    <label for="date">Дата *:</label>
+				    <input type="date" id="date" name="date" class="form-control" required>
+				    <small class="form-text text-muted">* Задължително поле.</small>
+			    </div>
+  			</div>
+  			
+			<div class="form-group">
+				<div class="col-2">
+				    <label for="time">Избран час *:</label>
+				    <input type="time" id="time" name="time" class="form-control" required>
+				</div>
+				<div class="col-3">
+				    <small class="form-text text-muted">* Комбинацията дата/час трябва да е уникална. <br>&nbsp;&nbsp;Задължително поле.</small>
+			    </div>
+  			</div>
+			
+			<div class="col-2">Пациент *:</div>
+			<div class="form-group">
+				<div class="col-2 mt-2">
+					<select id="patients-list" name="patients-list"  onchange="fillPatientInfo()" class="form-control" th:style="${patients.size() > 0} ? 'width:auto;'" size="5" required>
+						<option 
+							th:each="patient : ${patients}" 
+							th:value="${patient.id}"  
+							th:text="${ patient.fullName + ' (' + patient.egn + ')'}"
+						>
+						</option>
+					</select>
+					<small class="form-text text-muted">* Задължително поле.</small>
+				</div>
+			</div>
+			<input type="hidden" name="patient.id">
+			
+			<div class="col-2 mt-3"><p style="text-decoration: underline;">Статус на зъбите:</p></div>
+			
+			<table class="table table-sm table-light table-bordered col-2 ml-3">
+			  <thead>
+			    <tr>
+			      <th scope="col">18</th>
+			      <th scope="col">17</th>
+			      <th scope="col">16</th>
+			      <th scope="col">15</th>
+			      <th scope="col">14</th>
+			      <th scope="col">13</th>
+			      <th scope="col">12</th>
+			      <th scope="col">11</th>
+			      <th scope="col">21</th>
+			      <th scope="col">22</th>
+			      <th scope="col">23</th>
+			      <th scope="col">24</th>
+			      <th scope="col">25</th>
+			      <th scope="col">26</th>
+			      <th scope="col">27</th>
+			      <th scope="col">28</th>
+			    </tr>
+			  </thead>
+			  <tbody>
+			    <tr style="height: 50px;">
+			      <td data-toggle="modal" data-target="#tooth-18-modal" id="teeth[0]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-17-modal" id="teeth[1]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-16-modal" id="teeth[2]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-15-modal" id="teeth[3]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-14-modal" id="teeth[4]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-13-modal" id="teeth[5]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-12-modal" id="teeth[6]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-11-modal" id="teeth[7]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-21-modal" id="teeth[8]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-22-modal" id="teeth[9]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-23-modal" id="teeth[10]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-24-modal" id="teeth[11]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-25-modal" id="teeth[12]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-26-modal" id="teeth[13]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-27-modal" id="teeth[14]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-28-modal" id="teeth[15]-cell"></td>
+			    </tr>
+			    <tr style="height: 50px;">
+			      <td data-toggle="modal" data-target="#tooth-48-modal" id="teeth[16]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-47-modal" id="teeth[17]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-46-modal" id="teeth[18]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-45-modal" id="teeth[19]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-44-modal" id="teeth[20]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-43-modal" id="teeth[21]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-42-modal" id="teeth[22]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-41-modal" id="teeth[23]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-31-modal" id="teeth[24]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-32-modal" id="teeth[25]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-33-modal" id="teeth[26]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-34-modal" id="teeth[27]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-35-modal" id="teeth[28]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-36-modal" id="teeth[29]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-37-modal" id="teeth[30]-cell"></td>
+			      <td data-toggle="modal" data-target="#tooth-38-modal" id="teeth[31]-cell"></td>
+			    </tr>
+			  </tbody>
+			  <tfoot>
+			    <tr>
+			      <th scope="col">48</th>
+			      <th scope="col">47</th>
+			      <th scope="col">46</th>
+			      <th scope="col">45</th>
+			      <th scope="col">44</th>
+			      <th scope="col">43</th>
+			      <th scope="col">42</th>
+			      <th scope="col">41</th>
+			      <th scope="col">31</th>
+			      <th scope="col">32</th>
+			      <th scope="col">33</th>
+			      <th scope="col">34</th>
+			      <th scope="col">35</th>
+			      <th scope="col">36</th>
+			      <th scope="col">37</th>
+			      <th scope="col">38</th>
+			    </tr>
+			  </tfoot>
+			</table>
+			
+			<!-- Tooth 18 modal -->
+			<div class="modal fade" id="tooth-18-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-18-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-18-modal-label">Зъб 18</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[0].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 17 modal -->
+			<div class="modal fade" id="tooth-17-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-17-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-17-modal-label">Зъб 17</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[1].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 16 modal -->
+			<div class="modal fade" id="tooth-16-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-16-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-16-modal-label">Зъб 16</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[2].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 15 modal -->
+			<div class="modal fade" id="tooth-15-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-15-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-15-modal-label">Зъб 15</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[3].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 14 modal -->
+			<div class="modal fade" id="tooth-14-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-14-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-14-modal-label">Зъб 14</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[4].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 13 modal -->
+			<div class="modal fade" id="tooth-13-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-13-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-13-modal-label">Зъб 13</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[5].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 12 modal -->
+			<div class="modal fade" id="tooth-12-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-12-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-12-modal-label">Зъб 12</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[6].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 11 modal -->
+			<div class="modal fade" id="tooth-11-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-11-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-11-modal-label">Зъб 11</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[7].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 21 modal -->
+			<div class="modal fade" id="tooth-21-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-21-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-21-modal-label">Зъб 21</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[8].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 22 modal -->
+			<div class="modal fade" id="tooth-22-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-22-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-22-modal-label">Зъб 22</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[9].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 23 modal -->
+			<div class="modal fade" id="tooth-23-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-23-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-23-modal-label">Зъб 23</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[10].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 24 modal -->
+			<div class="modal fade" id="tooth-24-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-24-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-24-modal-label">Зъб 24</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[11].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 25 modal -->
+			<div class="modal fade" id="tooth-25-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-25-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-25-modal-label">Зъб 25</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[12].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 26 modal -->
+			<div class="modal fade" id="tooth-26-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-26-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-26-modal-label">Зъб 26</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[13].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 27 modal -->
+			<div class="modal fade" id="tooth-27-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-27-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-27-modal-label">Зъб 27</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[14].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 28 modal -->
+			<div class="modal fade" id="tooth-28-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-28-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-28-modal-label">Зъб 28</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[15].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 48 modal -->
+			<div class="modal fade" id="tooth-48-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-48-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-48-modal-label">Зъб 48</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[16].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 47 modal -->
+			<div class="modal fade" id="tooth-47-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-47-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-47-modal-label">Зъб 47</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[17].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 46 modal -->
+			<div class="modal fade" id="tooth-46-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-46-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-46-modal-label">Зъб 46</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[18].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 45 modal -->
+			<div class="modal fade" id="tooth-45-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-45-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-45-modal-label">Зъб 45</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[19].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 44 modal -->
+			<div class="modal fade" id="tooth-44-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-44-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-44-modal-label">Зъб 44</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[20].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 43 modal -->
+			<div class="modal fade" id="tooth-43-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-43-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-43-modal-label">Зъб 43</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[21].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 42 modal -->
+			<div class="modal fade" id="tooth-42-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-42-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-42-modal-label">Зъб 42</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[22].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 41 modal -->
+			<div class="modal fade" id="tooth-41-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-41-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-41-modal-label">Зъб 41</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[23].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 31 modal -->
+			<div class="modal fade" id="tooth-31-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-31-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-31-modal-label">Зъб 31</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[24].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 32 modal -->
+			<div class="modal fade" id="tooth-32-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-32-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-32-modal-label">Зъб 32</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[25].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 33 modal -->
+			<div class="modal fade" id="tooth-33-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-33-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-33-modal-label">Зъб 33</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[26].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 34 modal -->
+			<div class="modal fade" id="tooth-34-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-34-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-34-modal-label">Зъб 34</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[27].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 35 modal -->
+			<div class="modal fade" id="tooth-35-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-35-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-35-modal-label">Зъб 35</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[28].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 36 modal -->
+			<div class="modal fade" id="tooth-36-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-36-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-36-modal-label">Зъб 36</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[29].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 37 modal -->
+			<div class="modal fade" id="tooth-37-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-37-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-37-modal-label">Зъб 37</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[30].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- Tooth 38 modal -->
+			<div class="modal fade" id="tooth-38-modal" tabindex="-1" role="dialog" aria-labelledby="tooth-38-modal-label" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="tooth-38-modal-label">Зъб 38</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="container-fluid">
+				      	<div class="row mb-2">
+				      		Текущо състояние:
+				      	</div>
+				      	<div class="row">
+				        	<select class="tooth-status form-control"></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Извършвани манипулации: 
+				      	</div>
+				      	<div class="row">
+				      		<select id="patient.teeth[31].appliedManipulations" class="form-control" size="5" disabled></select>
+				      	</div>
+				      	<div class="row mt-4 mb-2">
+				      		Текуща манипулация: 
+				      	</div>
+				      	<div class="row">
+				      		<select class="available-manipulations form-control"></select>
+				      	</div>
+			      	</div>	
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Затвори</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			
+			<div class="form-group">
+				<div class="col-2">
+				    <label for="note">Забележка:</label>
+				    <textarea id="note" name="note" class="form-control"></textarea>
+			    </div>
+  			</div>
+			
+			<div class="col mt-4 mb-3">
+				<button type="submit" name="updateSchedule" class="btn btn-primary" value="updateSchedule">Запис</button>
+				<button type="submit" name="createSchedule" class="btn btn-primary" value="createSchedule">Нов</button>
+				<button type="submit" name="deleteSchedule" class="btn btn-primary" value="deleteSchedule">Изтриване</button>
+			</div>
+		</form>
+		
+		<script type="text/javascript">
+			function submitScheduleInfoOnSubmit() {
+				if (document.activeElement.getAttribute('value') === 'deleteSchedule') {
+					return confirm('Сигурен ли си, че искаш да изтриеш данните за този записан час?');
+				}
+			}
+		</script>
+		
+		<script type="text/javascript">
+		    var optionOpen = "<option>";
+		    var optionClosed = "</option>";
+		    var selectItems = [
+		    	"Здрав", 
+		    	"Кариес", 
+		    	"Пулпит",
+		    	"Гангрена",
+		    	"Корен",
+		    	"Обтурация",
+		    	"Липсващ зъб",
+		    	"Коронка",
+		    	"Липсващ зъб",
+		    	"Фрактура",
+		    	"Пародонтоза I",
+		    	"Пародонтоза II",
+		    	"Пародонтоза III",
+		    	"Периодонтит",
+		    	"Пломба"
+		    ];
+		
+		    var toothCounter = 0;
+		    $(".tooth-status").each(function(){
+		    	$(this).attr( 'name', 'patient.teeth['+toothCounter+'].status' );
+		        for (key in selectItems)
+		        {
+		            $(this).append(optionOpen + selectItems[key] + optionClosed);    
+		        }
+		        toothCounter++;
+		    });
+		    
+		    var toothCellHexColors = new Map();
+		    toothCellHexColors.set("Кариес", "#FEFF00");
+		    toothCellHexColors.set("Пулпит", "#0003F7");
+		    toothCellHexColors.set("Гангрена", "#7F8000");
+		    toothCellHexColors.set("Корен", "#C0C0C0");
+		    toothCellHexColors.set("Обтурация", "#780400");
+		    toothCellHexColors.set("Липсващ зъб", "#000000");
+		    toothCellHexColors.set("Коронка", "#15F4FF");
+		    toothCellHexColors.set("Изкуствен зъб", "#027F00");
+		    toothCellHexColors.set("Фрактура", "#FE02FA");
+		    toothCellHexColors.set("Пародонтоза I", "#FD0200");
+		    toothCellHexColors.set("Пародонтоза II", "#FD0200");
+		    toothCellHexColors.set("Пародонтоза III", "#FD0200");
+		    toothCellHexColors.set("Периодонтит", "#00FF00");
+		    toothCellHexColors.set("Пломба", "#808080");
+		    
+		    $(".tooth-status" ).change(function() {
+		      var toothCellId = 
+		    	  "#teeth\\[" + 
+		    	  $(this).attr('name').substring( 
+		    			 $(this).attr('name').indexOf('[')+1, 
+		    			 $(this).attr('name').indexOf(']') 
+		    	  ) + 
+		    	  "\\]-cell";
+	
+		      if ($(this).val() !== "Здрав") {
+		    	  $(toothCellId).css( 'background-color', toothCellHexColors.get($(this).val()) );
+		      }
+		      else {
+		    	  $(toothCellId).css( 'background-color', "" );
+		      }
+		    });
+		</script>
+		
+		<script th:inline="javascript">
+			/*<![CDATA[*/
+			function fillScheduleForm() {
+				var schedules = /*[[${schedules}]]*/ 'default';
+				var selectedScheduleIndex = $('#schedule-list').find(":selected").index();
+				var selectedSchedule = schedules[selectedScheduleIndex];
+				
+				$('input[name="id"]').val(selectedSchedule.id);
+				$("#schedule-manipulations-list").empty();
+				$("#schedule-manipulations-list").css('width', '');
+
+				for (var i = 0; i < selectedSchedule.appliedManipulationsToday.length; ++i) {
+					var price = 
+						( selectedSchedule.appliedManipulationsToday[i].price + 
+						  (selectedSchedule.appliedManipulationsToday[i].price * (selectedSchedule.appliedManipulationsToday[i].vat / 100)) 
+						)
+						.toFixed(2);
+					$("#schedule-manipulations-list").css('width', 'auto');
+					$("#schedule-manipulations-list").append(
+						"<option>" 
+						+ price + " лв."
+						+ " - " 
+						+ selectedSchedule.appliedManipulationsToday[i].name 
+						+ "</option>"
+					);
+				}
+				
+				if ( selectedSchedule.paidStatus !== null ) { 
+					$('input[name="paidStatus"]').prop('checked', true);
+				}
+				else {
+					$('input[name="paidStatus"]').prop('checked', false);
+				}
+				$('input[name="priceToPay"]').val( selectedSchedule.priceToPay.toFixed(2) );
+				$('input[name="date"]').val(selectedSchedule.date);
+				$('input[name="time"]').val(selectedSchedule.time);
+				$('#patients-list').val(selectedSchedule.patient.id).prop('selected', true);
+				$('input[name="patient.id"]').val(selectedSchedule.patient.id);
+				var toothCounter = 0;
+			    $(".tooth-status").each(function(){
+			    	$('select[name=\"'+this.name+'\"]').val( selectedSchedule.patient.teeth[toothCounter].status );
+			        toothCounter++;
+			    });   
+				toothCounter = 0;
+			    $(".available-manipulations").each(function(){
+			    	$(this).attr( 'name', 'patient.teeth['+toothCounter+'].appliedManipulations[0].id');
+			    	toothCounter++;
+			    });
+
+			    for (var i = 0; i < selectedSchedule.patient.teeth.length; ++i) {
+			    	$('#teeth\\['+i+'\\]-cell').css( 'background-color', "" );
+			    	if ( selectedSchedule.patient.teeth[i].status !== "Здрав" ) {
+			    		$('#teeth\\['+i+'\\]-cell').css( 'background-color', toothCellHexColors.get(selectedSchedule.patient.teeth[i].status) );
+			    	}
+			    	$('#patient\\.teeth\\['+i+'\\]\\.appliedManipulations').empty();
+			    	for (var j = 0; j < selectedSchedule.patient.teeth[i].appliedManipulationDates.length; ++j) {
+			    		if (j < selectedSchedule.patient.teeth[i].appliedManipulations.length) {
+			    			$('#patient\\.teeth\\['+i+'\\]\\.appliedManipulations').append(
+				    			"<option>" + 
+				    			selectedSchedule.patient.teeth[i].appliedManipulationDates[j] + 
+				    			" - " + 
+				    			selectedSchedule.patient.teeth[i].appliedManipulations[j].name + 
+				    			"</option>"
+				    		);
+			    		}
+			    		else {
+			    			$('#patient\\.teeth\\['+i+'\\]\\.appliedManipulations').append(
+				    			"<option>" + 
+				    			selectedSchedule.patient.teeth[i].appliedManipulationDates[j] + 
+				    			" - " + 
+				    			"Неизвестна манипулация" + 
+				    			"</option>"
+				    		);
+			    		}
+			    	}
+			    }
+			    
+			    $('textarea[name="note"]').val(selectedSchedule.note);
+			}
+			/*]]>*/
+		</script>
+		
+		<script type="text/javascript" th:inline="javascript">
+		    /*<![CDATA[*/
+		    var manipulationList = [[${manipulations}]]
+		    $(".available-manipulations").each(function(){
+		    	$(this).append(
+	            	'<option>'
+	            	+ "</option>"
+	            );  
+		        for (key in manipulationList)
+		        {
+		            $(this).append(
+		            	'<option value="' + manipulationList[key].id + '">' 
+		            	+ manipulationList[key].name 
+		            	+ "</option>"
+		            );    
+		        }
+		    });
+		    /*]]>*/
+		</script>
+		
+		<script th:inline="javascript">
+			/*<![CDATA[*/
+			function fillPatientInfo() {
+				var patients = /*[[${patients}]]*/ 'default';
+				var selectedPatientIndex = $('#patients-list').find(":selected").index();
+				var selectedPatient = patients[selectedPatientIndex];
+				
+				// Change form values
+				$('input[name="patient.id"]').val(selectedPatient.id);
+				var toothCounter = 0;
+			    $(".tooth-status").each(function(){
+			    	$('select[name=\"'+this.name+'\"]').val( selectedPatient.teeth[toothCounter].status );
+			        toothCounter++;
+			    });
+			    
+				toothCounter = 0;
+			    $(".available-manipulations").each(function(){
+			    	$(this).attr( 'name', 'patient.teeth['+toothCounter+'].appliedManipulations[0].id');
+			    	toothCounter++;
+			    });
+			    
+			    for (var i = 0; i < selectedPatient.teeth.length; ++i) {
+			    	$('#patient\\.teeth\\['+i+'\\]\\.appliedManipulations').empty();
+			    	
+			    	$('#teeth\\['+i+'\\]-cell').css( 'background-color', "" );
+			    	if ( selectedPatient.teeth[i].status !== "Здрав" ) {
+			    		$('#teeth\\['+i+'\\]-cell').css( 'background-color', toothCellHexColors.get(selectedPatient.teeth[i].status) );
+			    	}
+			    	
+			    	for (var j = 0; j < selectedPatient.teeth[i].appliedManipulationDates.length; ++j) {
+			    		if (j < selectedPatient.teeth[i].appliedManipulations.length) {
+			    			$('#patient\\.teeth\\['+i+'\\]\\.appliedManipulations').append(
+				    			"<option>" + 
+				    			selectedPatient.teeth[i].appliedManipulationDates[j] + 
+				    			" - " + 
+				    			selectedPatient.teeth[i].appliedManipulations[j].name + 
+				    			"</option>"
+				    		);
+			    		}
+			    		else {
+			    			$('#patient\\.teeth\\['+i+'\\]\\.appliedManipulations').append(
+				    			"<option>" + 
+				    			selectedPatient.teeth[i].appliedManipulationDates[j] + 
+				    			" - " + 
+				    			"Неизвестна манипулация" + 
+				    			"</option>"
+				    		);
+			    		}
+			    	}
+			    }
+			}
+			/*]]>*/
+		</script>
+	</div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	
+	<title>Настройки</title>
+	
+	<!-- jQuery -->
+	<script
+	  src="https://code.jquery.com/jquery-3.3.1.js"
+	  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+	  crossorigin="anonymous">
+	</script>
+	
+	<!-- Bootstrap -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
+</head>
+<body>
+
+	<nav id="menu" class="navbar navbar-expand-sm bg-secondary">
+  		<ul class="navbar-nav">
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/">Начало</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/schedule">График</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/patients">Пациенти</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/settings">Настройки</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/archive">Архивиране</a>
+		    </li>
+  		</ul>
+	</nav>
+	
+	<nav class="mt-2">
+	  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+	    	<a class="nav-item nav-link active" id="nav-dentistinfo-tab" data-toggle="tab" href="#dentist-info" role="tab" aria-controls="dentist-info" aria-selected="true">Данни за зъболекаря</a>
+	    	<a class="nav-item nav-link" id="nav-manipulations-tab" data-toggle="tab" href="#manipulations" role="tab" aria-controls="manipulations" aria-selected="false">Манипулации</a>
+	  </div>
+    </nav>
+   
+   	<!-- Dentist info tab -->
+	<div class="tab-content" id="nav-tabContent">
+		  <div class="tab-pane fade show active" id="dentist-info" role="tabpanel" aria-labelledby="nav-dentistinfo-tab">
+			  	<div class="col-2 mt-2"><p><b>Лични данни</b></p></div>
+				<form action="submitDentistInfo" method="post" id="test">
+					<div class="form-group">
+						<div class="col-2">
+						    <label for="fullName">Име:</label>
+						    <input type="text" id="fullName" name="fullName" th:value="${dentist.fullName}" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="form-group">
+						<div class="col-2">
+						    <label for="phoneNumber">Телефон:</label>
+						    <input type="text" id="phoneNumber" name="phoneNumber" th:value="${dentist.phoneNumber}" maxlength="12" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="form-group">
+						<div class="col-2">
+						    <label for="egn">ЕГН:</label>
+						    <input type="text" id="egn" name="egn" th:value="${dentist.egn}" maxlength="10" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="col-2">
+		  				Пол: <br>
+						<div class="btn-group btn-group-toggle mt-2 mb-3" data-toggle="buttons">
+							<label id="dentist-gender-male-button" class="btn btn-secondary" th:classappend="${dentist.gender.equals('male')} ? 'active'">
+							  <input type="radio" name="gender" value="male" th:checked="${dentist.gender.equals('male')} ? 'checked'"> Мъж
+							</label>
+							<label id="dentist-gender-female-button" class="btn btn-secondary" th:classappend="${dentist.gender.equals('female')} ? 'active'">
+							   <input type="radio" name="gender" value="female" th:checked="${dentist.gender.equals('female')} ? 'checked'"> Жена
+							</label>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-2">
+						    <label for="address">Адрес:</label>
+						    <input type="text" id="address" name="address" th:value="${dentist.address}" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="form-group">
+						<div class="col-2">
+						    <label for="company">Фирма:</label>
+						    <input type="text" id="company" name="company" th:value="${dentist.company}" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="form-group">
+						<div class="col-2">
+						    <label for="object">Обект:</label>
+						    <input type="text" id="object" name="object" th:value="${dentist.object}" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="form-group">
+						<div class="col-2">
+						    <label for="mol">МОЛ:</label>
+						    <input type="text" id="mol" name="mol" th:value="${dentist.mol}" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="form-group">
+						<div class="col-2">
+						    <label for="bulstatNumber">Булстат:</label>
+						    <input type="text" id="bulstatNumber" name="bulstatNumber" th:value="${dentist.bulstatNumber}" maxlength="13" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="form-group">
+						<div class="col-2">
+						    <label for="taxNumber">Дан.номер:</label>
+						    <input type="text" id="taxNumber" name="taxNumber" th:value="${dentist.taxNumber}" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="form-group">
+		  				<label for="regNumber" class="col-3">Рег.номер на лечебно заведение:</label>
+						<div class="col-2">
+						    <input type="text" id="regNumber" name="regNumber" th:value="${dentist.regNumber}" class="form-control">
+					    </div>
+		  			</div>
+		  			<div class="form-group">
+						<div class="col-2">
+						    <label for="taxNumber">Договор с РЗОК:</label>
+						    <input type="text" id="rzokAgreement" name="rzokAgreement" th:value="${dentist.rzokAgreement}" class="form-control">
+					    </div>
+		  			</div>
+					<div class="col mt-4 mb-3">
+						<button type="submit" class="btn btn-primary">Запази</button>
+					</div>
+				</form>
+		  </div>
+		  
+		  <!-- Manipulations tab -->
+		  <div class="tab-pane fade" id="manipulations" role="tabpanel" aria-labelledby="nav-manipulations-tab">
+			  <div class="col-2 mt-2"><p><b>Списък с манипулации</b></p></div>
+				<form>
+				<div class="form-group">
+					<div class="col-2">
+						<select id="manipulations-list" name="manipulations-list" size="10" onchange="fillManipulationForm()" class="form-control" th:style="${manipulations.size() > 0} ? 'width:auto;'">
+							<option 
+								th:each="manipulation : ${manipulations}" 
+								th:value="manipulation + ${manipulation.id}"  
+								th:text="${ manipulation.name }"
+							>
+							</option>
+						</select>
+					</div>
+				</div>
+			</form>
+			<div class="col-2"><p><u>Избрана манипулация</u></p></div>
+			<form action="submitManipulationInfo" method="post" onsubmit="if (submitManipulationInfoOnSubmit() === false) event.preventDefault();">
+				<input type="hidden" name="id" value="-1">
+				
+				<div class="form-group">
+					<div class="col-2">
+					    <label for="name">Наименование *:</label>
+					    <input type="text" id="name" name="name" class="form-control" maxlength="50" required>
+					    <small class="form-text text-muted">* Името трябва да е уникално.</small>
+				    </div>
+	  			</div>
+	  			<div class="form-group">
+					<div class="col-2">
+					    <label for="price">Цена (в лева):</label>
+					    <input type="number" id="price" name="price" value="0.00" min="0" step="0.01" class="form-control" required>
+				    </div>
+	  			</div>
+	  			<div class="form-group">
+					<div class="col-2">
+					    <label for="vat">ДДС (в проценти):</label>
+					    <input type="number" id="vat" name="vat" value="20.0" min="0" max="100" step="0.1" class="form-control" required>
+				    </div>
+	  			</div>
+	  			<div class="form-group">
+					<div class="col-2">
+					    <label for="note">Забележка:</label>
+					    <textarea id="note" name="note" class="form-control"></textarea>
+				    </div>
+	  			</div>
+				<div class="col mt-4 mb-3">
+					<button type="submit" name="updateManipulation" class="btn btn-primary" value="updateManipulation">Запази</button>
+					<button type="submit" name="createManipulation" class="btn btn-primary" value="createManipulation">Нова</button>
+					<button type="submit" name="deleteManipulation" class="btn btn-primary" value="deleteManipulation">Изтриване</button>
+				</div>
+				</form>
+			  </div>
+		</div>
+		
+		<script type="text/javascript">
+			function submitManipulationInfoOnSubmit() {
+				if (document.activeElement.getAttribute('value') === 'deleteManipulation') {
+					return confirm('Сигурен ли си, че искаш да изтриеш манипулацията?');
+				}
+			}
+		</script>
+
+		<script th:inline="javascript">
+			/*<![CDATA[*/
+			function fillManipulationForm() {
+				var manipulations = /*[[${manipulations}]]*/ 'default';
+				var selectedManipulationIndex = $('#manipulations-list').find(":selected").index();
+				var selectedManipulation = manipulations[selectedManipulationIndex];
+				
+				// Change form values
+				$('input[name="id"]').val(selectedManipulation.id);
+				$('input[name="name"]').val(selectedManipulation.name);
+				$('input[name="price"]').val(selectedManipulation.price.toFixed(2));
+				$('input[name="vat"]').val(selectedManipulation.vat.toFixed(1));
+				$('textarea[name="note"]').val(selectedManipulation.note);
+			}
+			/*]]>*/
+		</script>
+	
+</body>
+</html>

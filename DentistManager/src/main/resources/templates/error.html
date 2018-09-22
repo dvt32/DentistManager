@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	
+	<title>Грешка!</title>
+	
+	<!-- jQuery -->
+	<script
+	  src="https://code.jquery.com/jquery-3.3.1.js"
+	  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+	  crossorigin="anonymous">
+	</script>
+	
+	<!-- Bootstrap -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+	<link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
+</head>
+<body>
+	<nav id="menu" class="navbar navbar-expand-sm bg-secondary">
+  		<ul class="navbar-nav">
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/">Начало</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/schedule">График</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/patients">Пациенти</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/settings">Настройки</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/archive">Архивиране</a>
+		    </li>
+  		</ul>
+	</nav>
+	
+	<!-- General error -->
+	<div class="card col-3 mt-2 ml-2 bg-warning" th:if="${patientStatusMessage == null && manipulationStatusMessage == null && scheduleStatusMessage == null}">
+		<div class="card-body">
+			<h5 class="card-title">Грешка!</h5>
+			<p class="card-text">
+				Опа, нещо се обърка! <i class="em em-fearful"></i> <br>
+				Пробвай да заредиш приложението отново! <br><br>
+				
+				Ако мислиш, че грешката е при нас, пиши на <a href="mailto:dtrifonov32@gmail.com">dtrifonov32@gmail.com</a>.
+			</p>
+		</div>
+	</div>
+	
+	<!-- Patient submit error -->
+	<div class="card col-3 mt-2 ml-2 bg-danger text-white" th:if="${patientStatusMessage != null && patientStatusMessage.equals('duplicateEgnError')}">
+		<div class="card-body">
+			<h5 class="card-title">Грешка!</h5>
+			<p class="card-text">
+				Въведенoто ЕГН се повтаря! <i class="em em-disappointed_relieved"></i><br><br>
+				Пробвай да заредиш отново страницата от менюто горе и да въведеш ново ЕГН!
+			</p>
+		</div>
+	</div>
+	
+	<!-- Manipulation submit error -->
+	<div class="card col-3 mt-2 ml-2 bg-danger text-white" th:if="${manipulationStatusMessage != null && manipulationStatusMessage.equals('duplicateNameError')}">
+		<div class="card-body">
+			<h5 class="card-title">Грешка!</h5>
+			<p class="card-text">
+				Въведенoто име на манипулацията се повтаря! <i class="em em-disappointed_relieved"></i><br><br>
+				Пробвай да заредиш отново страницата от менюто горе и да въведеш ново име!
+			</p>
+		</div>
+	</div>
+	
+	<!-- Schedule submit error -->
+	<div class="card col-3 mt-2 ml-2 bg-danger text-white" th:if="${scheduleStatusMessage != null && scheduleStatusMessage.equals('duplicateDateTimeError')}">
+		<div class="card-body">
+			<h5 class="card-title">Грешка!</h5>
+			<p class="card-text">
+				Този час вече е зает! <i class="em em-disappointed_relieved"></i><br><br>
+				Пробвай да заредиш отново страницата от менюто горе и да избереш друга дата или друг час!
+			</p>
+		</div>
+	</div>
+	
+</body>
+</html>

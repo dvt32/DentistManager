@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	
+	<title>Архивиране</title>
+	
+	<!-- jQuery -->
+	<script
+	  src="https://code.jquery.com/jquery-3.3.1.js"
+	  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+	  crossorigin="anonymous">
+	</script>
+	
+	<!-- Bootstrap -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+	
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
+</head>
+<body>
+	<nav id="menu" class="navbar navbar-expand-sm bg-secondary">
+  		<ul class="navbar-nav">
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/">Начало</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/schedule">График</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/patients">Пациенти</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/settings">Настройки</a>
+		    </li>
+		    <li class="nav-item">
+		      <a class="nav-link text-light" href="/archive">Архивиране</a>
+		    </li>
+  		</ul>
+	</nav>
+	
+	<div>
+		<div class="col-2 mt-2"><p><b>Архивиране на база данни</b></p></div>
+		<form action="exportDatabase" method="get">
+			<div class="form-group">
+				<div class="col-2">
+		       		<button type="submit" class="btn btn-primary">Запази като SQL</button>
+		       	</div>
+			</div>
+		</form>
+	</div>
+	
+	<div class="col-2 mt-2 mb-2">---</div>
+	
+	<div>
+		<div class="col-4 mt-2"><p><b>Възстановяване на база данни от архив</b></p></div>
+		<form action="importDatabase" method="post" enctype="multipart/form-data" onsubmit="return confirm('Сигурен ли си, че искаш да възстановиш базата данни от този файл? Това ще изтрие всякаква информация за пациенти, манипулации и графици.');">
+			<div class="form-group">
+				<div class="col-4">
+					<input type="file" name="file" accept=".sql" required />
+		       	</div>
+			</div>
+			<div class="form-group">
+				<div class="col-2 mt-3">
+	       			<button type="submit" class="btn btn-primary">Възстанови от SQL</button>
+	       		</div>
+			</div>
+		</form>
+	</div>
+	
+	<div class="col-2 mt-2 mb-2">---</div>
+	
+	<div>
+		<div class="col-2 mt-2"><p><b>Изпразване на база данни</b></p></div>
+		<form action="emptyDatabase" method="post" onsubmit="return confirm('Сигурен ли си, че искаш да изпразниш базата данни?');">
+			<div class="form-group">
+				<div class="col-2">
+		       		<button type="submit" class="btn btn-primary">Изпразни</button>
+		       	</div>
+			</div>
+		</form>
+	</div>
+</body>
+</html>
