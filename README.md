@@ -6,7 +6,7 @@ My bachelor thesis project - a webapp for managing a dentist's patients &amp; ap
 
 [![1.png](https://i.postimg.cc/05cctHWW/1.png)](https://postimg.cc/RqJ7hGzK) [![2.png](https://i.postimg.cc/JnTZQSrj/2.png)](https://postimg.cc/XGCrjHyv)
 
-[![3.png](https://i.postimg.cc/HnV5v3nR/3.png)](https://postimg.cc/GTnHHFkx) [![4.png](https://i.postimg.cc/x8hmwHbC/4.png)](https://postimg.cc/LgkhfJDK) [![5.png](https://i.postimg.cc/FFB0ktn4/5.png)](https://postimg.cc/4npYj0gL)
+[![4.png](https://i.postimg.cc/x8hmwHbC/4.png)](https://postimg.cc/LgkhfJDK) [![5.png](https://i.postimg.cc/FFB0ktn4/5.png)](https://postimg.cc/4npYj0gL)
 
 # How to run
 
