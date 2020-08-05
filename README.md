@@ -2,6 +2,8 @@
 
 My bachelor thesis project - a webapp for managing a dentist's patients &amp; appointments (uses Spring Framework).
 
+The app's interface is in Bulgarian.
+
 # Screenshots
 
 [![1.png](https://i.postimg.cc/05cctHWW/1.png)](https://postimg.cc/RqJ7hGzK) [![2.png](https://i.postimg.cc/JnTZQSrj/2.png)](https://postimg.cc/XGCrjHyv)
